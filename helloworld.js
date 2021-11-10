@@ -1,10 +1,26 @@
 
 const express = require('express')
+const redis = require("redis");
+const rcli = redis.createClient({
+    url: process.env.REDIS_URL
+});
+
+rcli.on("error", function (error) {
+    console.error(error);
+});
+
+
 const app = express()
 const port = 8080
 
 app.get('/', (req, res) => {
-    res.send('Hello World!')
+    rcli.INCR("hellocounter", (err, val) => {
+        if (err) {
+            return res.status(500)
+        }
+
+        res.send('Hello World! ' + val)
+    })
 })
 
 app.listen(port, () => {
